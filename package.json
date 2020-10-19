@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "@pxtrn/bybit-api": "^1.1.5"
+    "@pxtrn/bybit-api": "^1.1.5",
+    "dotenv": "^8.2.0"
   }
 }
