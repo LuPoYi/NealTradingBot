@@ -1,5 +1,4 @@
 const { RestClient } = require('@pxtrn/bybit-api')
-const { WebsocketClient } = require('@pxtrn/bybit-api')
 
 const dotenv = require('dotenv')
 dotenv.config()
