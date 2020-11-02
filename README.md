@@ -19,3 +19,38 @@
 - 使用 Rest API 下單及刪單
 
 - 計算金額獲利…
+
+#### Package
+
+- inquirer
+- readline
+
+#### Flow
+
+```zsh
+# Create Grid trading
+ node order.js     ✔  4661  21:29:09
+? 請選擇交易對 ETH/USDT - USDT
+? 網格區間上限 10000
+? 網格區間下限 8000
+? 網格數量 20
+? 總投資額度 1
+{
+  "pair": "ETH/USDT - USDT",
+  "high": "10000",
+  "low": "8000",
+  "grids": "20",
+  "totalAmount": "1"
+}
+```
+
+網格基本規則：
+
+// high 0.9
+// low 0.7
+// grids 10
+// => 0.7888, 0.7666, 0.7
+
+// high 14000
+// low 13000
+// grids 10

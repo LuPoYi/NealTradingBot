@@ -1,4 +1,5 @@
 const { RestClient } = require('@pxtrn/bybit-api')
+const inquirer = require('inquirer')
 
 const dotenv = require('dotenv')
 dotenv.config()
@@ -21,3 +22,15 @@ client
   .catch((err) => {
     console.error(error)
   })
+
+var questions = [
+  {
+    type: 'input',
+    name: 'name',
+    message: "What's your name?",
+  },
+]
+
+inquirer.prompt(questions).then((answers) => {
+  console.log(`Hi ${answers['name']}!`)
+})
