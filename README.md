@@ -20,6 +20,8 @@
 
 - 計算金額獲利…
 
+- use Redis as DB
+
 #### Package
 
 - inquirer
