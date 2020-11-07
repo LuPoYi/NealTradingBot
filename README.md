@@ -56,3 +56,19 @@
 // high 14000
 // low 13000
 // grids 10
+
+<!--
+active_gridTrading -> UUID(123456789) -> {
+ startAt = Time.now,
+ count = 1,
+ side = "Buy",
+ symbol = "BTCUSD",
+ high = 14000,
+ low = 13000,
+ grids = 10,
+ totalQty = 3000,
+ baseOrderPrices = [13000, 13100, 13200, ...],
+ currentOrderID: ["123", "456", "789"],
+ filledOrderID: ["321", "654"]
+
+} -->
