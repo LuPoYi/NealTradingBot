@@ -57,6 +57,13 @@
 // low 13000
 // grids 10
 
+### 空單網格
+
+- 先設定網格價位列表 `13000, 13500, 14000, 14500, 15000`
+- 比現價還大的單就直接下空單(open)
+- 若現價往下碰到設定好的網格價位時，在該網格價補一個空單(open) - 限價 post only
+- 若現價往上碰到設定好的網格價位且空單成交時，在下一個網格價補一張多單(close)
+
 <!--
 active_gridTrading -> UUID(123456789) -> {
  startAt = Time.now,
@@ -72,3 +79,34 @@ active_gridTrading -> UUID(123456789) -> {
  filledOrderID: ["321", "654"]
 
 } -->
+
+<!--
+// 設定網格進redis
+redisClient.set('gridTrading', {
+
+  settings: {
+    priceList: [16000, 15800, 15600, 15400, 15200, 15000, 14800, 14600, 14400, 14200, 14000],
+    side: 'Sell - Short',
+    symbol: 'BTCUSD',
+    high: 16000,
+    low: 14000,
+    grids: 11,
+    totalQty: 1000,
+    qty: 90.9090909090909,
+    startAt: 1604826504,
+  }
+
+  pairOrderIDs: {
+    openID: closeID || null,
+    openID2: closeID2 || null,
+  },
+
+  currentPosition: {
+  },
+  currentOrders: [{
+
+  }],
+  filledOrders: [{
+
+  }]
+}) -->

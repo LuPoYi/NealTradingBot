@@ -1,13 +1,26 @@
+const gridTradingInput = require('./lib/gridTrading')
+const { getLatestInformation } = require('./lib/rest/market')
+const { accountInfo, getUserLeverage, changeUserLeverage } = require('./lib/rest/account')
+const { wsClient, redisClient } = require('./lib/client')
 const inquirer = require('inquirer')
-const gridTradingInput = require('./rest/gridTrading')
-const { accountInfo, getUserLeverage, changeUserLeverage } = require('./rest/account')
-const { wsClient } = require('./websocket/websocket')
+// // redis
 
-const dotenv = require('dotenv')
-dotenv.config()
+// const redis = require('redis')
+// const client = redis.createClient() // this creates a new client
+// client.on('connect', () => {
+//   console.log('Redis client connected')
+// })
+// client.set('foo', 'bar', redis.print)
+// client.get('foo', (error, result) => {
+//   if (error) {
+//     console.log(error)
+//     throw error
+//   }
+//   console.log('GET result ->' + result)
+// })
 
 const main = () => {
-  wsClient()
+  // wsClient()
 
   inquirer
     .prompt([
@@ -19,6 +32,7 @@ const main = () => {
           'Account 倉位及餘額',
           'Order 未成交訂單',
           'History 已成交訂單',
+          'Market 最新成交價',
           'GridTrading 下網格單',
         ],
       },
@@ -37,6 +51,11 @@ const main = () => {
           break
         case 'GridTrading':
           gridTradingInput()
+          break
+        case 'Market':
+          getLatestInformation('BTCUSD').then((price) => {
+            console.log('price', price)
+          })
           break
         default:
           break
