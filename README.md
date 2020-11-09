@@ -31,6 +31,9 @@
 
 #### Flow
 
+1. 建網格單 (set redis)
+2. 確認是否要執行，(執行時需要下市價單)
+
 ```zsh
 # Create Grid trading
  node order.js     ✔  4661  21:29:09

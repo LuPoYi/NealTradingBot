@@ -14,6 +14,11 @@ console.log(`PRIVATE_KEY ${PRIVATE_KEY}`)
 
 const client = new RestClient(API_KEY, PRIVATE_KEY)
 
+console.log('getLatestInformation')
+client.getLatestInformation({ symbol: 'BTCUSD' }).then((data) => {
+  console.log('data', data)
+})
+
 client
   .changeUserLeverage({ leverage: 10, symbol: 'ETHUSD' })
   .then((result) => {
