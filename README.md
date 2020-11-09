@@ -22,6 +22,8 @@
 
 - use Redis as DB
 
+- 需支援多網格
+
 #### Package
 
 - inquirer
