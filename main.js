@@ -1,27 +1,49 @@
-const gridTradingInput = require('./lib/gridTrading')
+const mainGridTrading = require('./lib/gridTrading')
 const { getLatestInformation } = require('./lib/rest/market')
 const { accountInfo, getUserLeverage, changeUserLeverage } = require('./lib/rest/account')
-const { wsClient, redisClient } = require('./lib/client')
+const { wsClient, restClient, redisClient } = require('./lib/client')
 const inquirer = require('inquirer')
-// // redis
 
-// const redis = require('redis')
-// const client = redis.createClient() // this creates a new client
-// client.on('connect', () => {
-//   console.log('Redis client connected')
-// })
-// client.set('foo', 'bar', redis.print)
-// client.get('foo', (error, result) => {
-//   if (error) {
-//     console.log(error)
-//     throw error
-//   }
-//   console.log('GET result ->' + result)
-// })
+const checkRedis = () => {
+  return new Promise((resolve, reject) => {
+    try {
+      redisClient.set('foo', Date.now())
+      redisClient.get('foo', (error, result) => {
+        if (error) {
+          throw error
+        }
+        resolve('[Check] Redis OK', result)
+      })
+    } catch (err) {
+      reject('[Check] Redis Fail', err)
+    }
+  })
+}
 
-const main = () => {
-  // wsClient()
+const checkRest = () => {
+  return new Promise((resolve, reject) => {
+    restClient
+      .getLatestInformation()
+      .then((data) => {
+        if (data['ret_msg'].toString().toUpperCase() === 'OK') {
+          last_price = data['result'].find((item) => item.symbol === 'BTCUSD')?.last_price
+          resolve('[Check] Rest API OK', last_price)
+        } else {
+          throw error
+        }
+      })
+      .catch((err) => {
+        reject('[Check] Rest API Fail', err)
+      })
+  })
+}
 
+const checkCurrentOrders = () => {
+  // redis - currentGridTrading
+  return 'A'
+}
+
+const mainInquirer = () => {
   inquirer
     .prompt([
       {
@@ -33,7 +55,7 @@ const main = () => {
           'Order 未成交訂單',
           'History 已成交訂單',
           'Market 最新成交價',
-          'GridTrading 下網格單',
+          'GridTrading 網格單',
         ],
       },
     ])
@@ -50,7 +72,7 @@ const main = () => {
         case 'History':
           break
         case 'GridTrading':
-          gridTradingInput()
+          mainGridTrading()
           break
         case 'Market':
           getLatestInformation('BTCUSD').then((price) => {
@@ -61,6 +83,22 @@ const main = () => {
           break
       }
     })
+}
+
+const main = async () => {
+  // check redis connection
+  const isRedisOK = await checkRedis()
+  console.log(isRedisOK)
+
+  // check bybit api
+  const isRestOK = await checkRest()
+  console.log(isRestOK)
+
+  // check current orders
+  // await checkCurrentOrders()
+
+  // inquirer
+  mainInquirer()
 }
 
 main()
