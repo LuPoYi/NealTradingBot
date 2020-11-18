@@ -39,7 +39,16 @@ const checkRest = () => {
 }
 
 const checkCurrentOrders = () => {
-  // redis - currentGridTrading
+  // redis - GridTrading
+
+  // TODO: redisClient.hgetall('gridTrading', function (_, results) {})
+
+  // bybit - current Order
+
+  // TODO: restClient.getActiveOrder
+  // ...and then
+  // TODO: restClient.placeActiveOrder
+
   return 'A'
 }
 
@@ -85,6 +94,32 @@ const mainInquirer = () => {
     })
 }
 
+const remindInquirer = (gridTradingSet) => {
+  Object.keys(gridTradingSet).map((uuid) => {
+    const obj = JSON.parse(gridTradingSet[uuid])
+
+    console.log(uuid, obj?.settings?.priceList)
+  })
+
+  inquirer
+    .prompt([
+      {
+        type: 'checkbox',
+        name: 'uuids',
+        message: '目前網格: 請選擇要移除的項目，未刪除的網格下一步會繼續追蹤價位並下單',
+        choices: Object.keys(gridTradingSet),
+      },
+    ])
+    .then((answers) => {
+      let uuids = answers.uuids
+      console.log('uuids', uuids)
+      uuids.forEach((uuid) => {
+        redisClient.hdel('gridTrading', uuid)
+        // TODO: 刪bybit order restClient.placeActiveOrder
+      })
+    })
+}
+
 const main = async () => {
   // check redis connection
   const isRedisOK = await checkRedis()
@@ -94,14 +129,21 @@ const main = async () => {
   const isRestOK = await checkRest()
   console.log(isRestOK)
 
-  // check current orders
-  // await checkCurrentOrders()
+  // check current orders JSON.stringify
+  let gridTradingSet
 
-  // inquirer
-  mainInquirer()
+  redisClient.hgetall('gridTrading', function (_, results) {
+    if (results) {
+      remindInquirer(results)
+    } else {
+      console.log('目前尚無網格單')
+    }
+  })
+  // mainInquirer()
 }
 
 main()
+
 // {
 //   "pair": "ETH/USDT - USDT",
 //   "high": "10000",
