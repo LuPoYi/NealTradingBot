@@ -142,6 +142,8 @@ const main = async () => {
     }
   })
   // mainInquirer()
+
+  wsClient()
 }
 
 main()

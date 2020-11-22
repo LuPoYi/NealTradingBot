@@ -124,34 +124,33 @@ active_gridTrading -> UUID(123456789) -> {
 
 <!--
 // 設定網格進redis
-redisClient.set('gridTrading', {
-
-  settings: {
-    priceList: [16000, 15800, 15600, 15400, 15200, 15000, 14800, 14600, 14400, 14200, 14000],
-    side: 'Sell - Short',
-    symbol: 'BTCUSD',
-    high: 16000,
-    low: 14000,
-    grids: 11,
-    totalQty: 1000,
-    qty: 90.9090909090909,
-    startAt: 1604826504,
-  }
-
-  pairOrderIDs: {
-    openID: closeID || null,
-    openID2: closeID2 || null,
+{
+  "settings": {
+    "priceList": [
+      20000,
+      19600,
+      19200,
+      18800,
+      18400,
+      18000
+    ],
+    "side": "Sell",
+    "symbol": "BTCUSD",
+    "high": 20000,
+    "low": 18000,
+    "grids": 6,
+    "totalQty": 300,
+    "qty": 50,
+    "startAt": 1606034107
   },
-
-  currentPosition: {
-  },
-  currentOrders: [{
-
-  }],
-  filledOrders: [{
-
-  }]
-}) -->
+  "currentPosition": {},
+  "currentOrders": [],
+  "filledOrders": [],
+  "orderCount": 0,
+  "allOrderResults": [
+    {}
+  ]
+}-->
 
 <!--
 > gridTradingExecute('yu0f9', 1604930338)
