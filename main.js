@@ -117,6 +117,7 @@ const remindInquirer = (gridTradingSet) => {
         redisClient.hdel('gridTrading', uuid)
         // TODO: 刪bybit order restClient.placeActiveOrder
       })
+      mainInquirer()
     })
 }
 
@@ -137,6 +138,7 @@ const main = async () => {
       remindInquirer(results)
     } else {
       console.log('目前尚無網格單')
+      mainInquirer()
     }
   })
   // mainInquirer()
