@@ -1,7 +1,8 @@
+const { WebsocketClient } = require('@pxtrn/bybit-api')
 const mainGridTrading = require('./lib/gridTrading')
 const { getLatestInformation } = require('./lib/rest/market')
 const { accountInfo, getUserLeverage, changeUserLeverage } = require('./lib/rest/account')
-const { wsClient, restClient, redisClient } = require('./lib/client')
+const { redisClient, restClient, redisHGetAllAsync } = require('./lib/client')
 const inquirer = require('inquirer')
 
 const checkRedis = () => {
@@ -121,6 +122,106 @@ const remindInquirer = (gridTradingSet) => {
     })
 }
 
+const websocketConnect = () => {
+  const dotenv = require('dotenv')
+  dotenv.config()
+
+  const API_KEY = process.env.API_KEY
+  const PRIVATE_KEY = process.env.PRIVATE_KEY
+  const ws = new WebsocketClient({ key: API_KEY, secret: PRIVATE_KEY })
+
+  ws.subscribe(['position', 'order'])
+
+  ws.on('open', function () {
+    console.log('[websocket] connection open')
+  })
+
+  ws.on('update', async function (message) {
+    // console.log('[websocket] update', message)
+    switch (message?.topic) {
+      case 'position':
+        for (const data of message?.data) {
+          const { symbol, size, side, entry_price, position_value } = data
+          console.log(
+            `[position] ${symbol} ${side} Qty: ${size} Entry Price: ${entry_price} Position Value: ${position_value}`
+          )
+        }
+        // TODO: set redis currentPosition
+        break
+      case 'order':
+        // 訂單狀態改變
+        // status: [Cancelled New Filled]
+        // need check order_id is Filled
+
+        // when find order_type === Filled
+        // send Rest.GetActiveOrder to check current Orders
+        // and then Rest.placeAnOrder (if needed)
+        for (const data of message?.data) {
+          const {
+            order_id,
+            order_type,
+            price,
+            symbol,
+            side,
+            qty,
+            cum_exec_qty,
+            order_status,
+          } = data
+          console.log(
+            `[order] ${symbol} ${side}, Order type: ${order_type}, Price:${price}, Qty: ${cum_exec_qty}/${qty}, Status: ${order_status} - ${order_id}`
+          )
+
+          if (order_status === 'Filled') {
+            let isExist = false
+            let uuid
+            let resultObject
+            const gridTradingResult = await redisHGetAllAsync('gridTrading')
+
+            // Find the uuid if price and order_id exist
+            for (const [key, result] of Object.entries(gridTradingResult)) {
+              uuid = key
+              resultObject = JSON.parse(result)
+              if (
+                resultObject?.settings?.priceList?.includes(price) &&
+                restClient?.currentOrders[price]?.order_id === order_id
+              ) {
+                isExist = true
+
+                // update object - from currentOrders to filledOrders
+                resultObject.filledOrderIDs.push(order_id)
+                resultObject.currentOrders[price] = {}
+                break
+              }
+            }
+
+            // update redis
+            if (isExist) {
+              console.log('[order] update redis - from currentOrders to filledOrders')
+              await redisHSetAsync('gridTrading', uuid, JSON.stringify(resultObject))
+            }
+
+            // TODO: check place new Order is needed?
+          }
+        }
+        break
+      default:
+        console.log('[others]', message)
+    }
+  })
+
+  ws.on('response', function (response) {
+    console.log('[websocket] response', response)
+  })
+
+  ws.on('close', function () {
+    console.log('[websocket] connection closed')
+  })
+
+  ws.on('error', function (err) {
+    console.error('[websocket] ERR', err)
+  })
+}
+
 const main = async () => {
   // check redis connection
   const isRedisOK = await checkRedis()
@@ -141,38 +242,28 @@ const main = async () => {
       mainInquirer()
     }
   })
-  // mainInquirer()
-
-  wsClient()
 }
 
 main()
 
-// {
-//   "pair": "ETH/USDT - USDT",
-//   "high": "10000",
-//   "low": "8000",
-//   "grids": "20",
-//   "totalAmount": "1"
+// this function should be in the websocket loop
+// loop this function to be a websocket listener and place order and update redis
+// const checkAndPlaceOrders = () => {
+//   let ans
+//   console.log('checkAndPlaceOrders')
+//   redisClient.hgetall('gridTrading', function (err, results) {
+//     if (err) {
+//       console.error('err', err)
+//     } else {
+//       // console.log('results', results)
+//       ans = results
+//       // a0ivro: '{"settings":{"priceList":[17000,16600,16200,15800,15400,15000],"side":"Sell","symbol":"BTCUSD","high":17000,"low":15000,"grids":6,"totalQty":6000,"qty":1000,"startAt":1605445243},"currentPosition":{},"currentOrders":[],"filledOrders":[],"orderCount":0}',
+//       // nogtv8: '{"settings":{"priceList":[17000,16600,16200,15800,15400,15000],"side":"Sell","symbol":"BTCUSD","high":17000,"low":15000,"grids":6,"totalQty":6000,"qty":1000,"startAt":1605703794},"currentPosition":{},"currentOrders":[],"filledOrders":[],"orderCount":0}',
+//     }
+//   })
+
+//   return ans
 // }
 
-// -d '{"api_key":"{api_key}","side"="Buy",
-// "symbol"="BTCUSD","order_type":"Market","qty":10,
-// "time_in_force":"GoodTillCancel","timestamp":{timestamp},
-// "sign":"{sign}"}'
-
-// assert(params, 'No params passed');
-// assert(params.side, 'Parameter side is required');
-// assert(params.symbol, 'Parameter symbol is required');
-// assert(params.order_type, 'Parameter order_type is required');
-// assert(params.qty, 'Parameter qty is required');
-// assert(params.time_in_force, 'Parameter time_in_force is required');
-
-// processGridTrading({
-//   symbol: 'BTC/USDT - USDT',
-//   side: 'Buy - Long',
-//   high: '0.9',
-//   low: '0.7',
-//   grids: '10',
-//   totalAmount: '6000',
-// })
+// const getActiveOrders = await getActiveOrder({ symbol: 'BTCUSD' })
+// console.log('getActiveOrder', getActiveOrders?.result?.data)

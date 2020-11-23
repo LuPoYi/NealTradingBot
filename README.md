@@ -144,7 +144,21 @@ active_gridTrading -> UUID(123456789) -> {
     "startAt": 1606034107
   },
   "currentPosition": {},
-  "currentOrders": [],
+  "currentOrders": {
+    "a5009d6c-7b03-44ad-8417-19f4dd60f470": {
+      ...
+      order_status: 'New',
+      symbol: 'BTCUSD',
+      side: 'Sell',
+      order_type: 'Limit',
+      price: '20000',
+      qty: '50',
+      ...
+    },
+    "c62dc19c-7689-430f-9a41-8494c4d8c2e9": {
+      ...
+    }
+  },
   "filledOrders": [],
   "orderCount": 0,
   "allOrderResults": [
