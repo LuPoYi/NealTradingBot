@@ -2,7 +2,8 @@ const { WebsocketClient } = require('@pxtrn/bybit-api')
 const mainGridTrading = require('./lib/gridTrading')
 const { getLatestInformation } = require('./lib/rest/market')
 const { accountInfo, getUserLeverage, changeUserLeverage } = require('./lib/rest/account')
-const { redisClient, restClient, redisHGetAllAsync } = require('./lib/client')
+const { redisClient, restClient, redisHGetAllAsync, redisHSetAsync } = require('./lib/client')
+const { placeActiveOrder } = require('./lib/rest/order')
 const inquirer = require('inquirer')
 
 const checkRedis = () => {
@@ -149,24 +150,11 @@ const websocketConnect = () => {
         // TODO: set redis currentPosition
         break
       case 'order':
+        console.log('[websocket] order', message)
         // 訂單狀態改變
-        // status: [Cancelled New Filled]
-        // need check order_id is Filled
-
-        // when find order_type === Filled
-        // send Rest.GetActiveOrder to check current Orders
-        // and then Rest.placeAnOrder (if needed)
         for (const data of message?.data) {
-          const {
-            order_id,
-            order_type,
-            price,
-            symbol,
-            side,
-            qty,
-            cum_exec_qty,
-            order_status,
-          } = data
+          let { order_id, order_type, price, symbol, side, qty, cum_exec_qty, order_status } = data
+          price = parseInt(price)
           console.log(
             `[order] ${symbol} ${side}, Order type: ${order_type}, Price:${price}, Qty: ${cum_exec_qty}/${qty}, Status: ${order_status} - ${order_id}`
           )
@@ -175,21 +163,26 @@ const websocketConnect = () => {
             let isExist = false
             let uuid
             let resultObject
+            let priceList
             const gridTradingResult = await redisHGetAllAsync('gridTrading')
 
             // Find the uuid if price and order_id exist
             for (const [key, result] of Object.entries(gridTradingResult)) {
               uuid = key
               resultObject = JSON.parse(result)
-              if (
-                resultObject?.settings?.priceList?.includes(price) &&
-                restClient?.currentOrders[price]?.order_id === order_id
-              ) {
+              priceList = resultObject?.settings?.priceList
+              console.log('priceList', priceList)
+              console.log('price', price)
+              console.log('resultObject?.currentOrderIDs', resultObject?.currentOrderIDs)
+              if (priceList?.includes(price) && resultObject?.currentOrderIDs.includes(order_id)) {
                 isExist = true
 
                 // update object - from currentOrders to filledOrders
                 resultObject.filledOrderIDs.push(order_id)
                 resultObject.currentOrders[price] = {}
+                resultObject.currentOrderIDs = resultObject.currentOrderIDs.filter(
+                  (x) => x !== order_id
+                )
                 break
               }
             }
@@ -198,9 +191,48 @@ const websocketConnect = () => {
             if (isExist) {
               console.log('[order] update redis - from currentOrders to filledOrders')
               await redisHSetAsync('gridTrading', uuid, JSON.stringify(resultObject))
-            }
 
-            // TODO: check place new Order is needed?
+              // TODO: check place new Order is needed?
+              priceList = priceList.sort((a, b) => b - a)
+              let newSide
+              let newPriceIndex
+              let newPrice
+              const symbol = resultObject?.settings?.symbol
+              const qty = resultObject?.settings?.qty
+
+              if (side === 'Buy') {
+                newSide = 'Sell'
+                newPriceIndex = priceList.indexOf(price) - 1
+              } else if (side === 'Sell') {
+                newSide = 'Buy'
+                newPriceIndex = priceList.indexOf(price) + 1
+              }
+
+              console.log('[order] newPriceIndex', newPriceIndex)
+              if (newPriceIndex > 0 && newPriceIndex < priceList.length) {
+                newPrice = priceList[newPriceIndex]
+                console.log('[order] newPrice', newPrice)
+                // need place order
+                console.log('   placeActiveOrder', newPrice)
+                const result = await placeActiveOrder({
+                  side: newSide,
+                  symbol: symbol,
+                  order_type: 'Limit',
+                  qty: qty,
+                  price: newPrice,
+                  reduce_only: false,
+                })
+
+                // ERROR: ret_msg: 'reduce-only order has same side with current position',
+                resultObject.currentOrders[price] = result
+                resultObject.allOrderResults.push(result)
+                resultObject.currentOrderIDs.push(result.order_id)
+                redisClient.hset('gridTrading', uuid, JSON.stringify(resultObject))
+                console.log('[Redis] Update Done!')
+              }
+            } else {
+              console.log('[redis] isNotExist')
+            }
           }
         }
         break
@@ -232,7 +264,6 @@ const main = async () => {
   console.log(isRestOK)
 
   // check current orders JSON.stringify
-  let gridTradingSet
 
   redisClient.hgetall('gridTrading', function (_, results) {
     if (results) {
@@ -242,6 +273,8 @@ const main = async () => {
       mainInquirer()
     }
   })
+
+  websocketConnect()
 }
 
 main()

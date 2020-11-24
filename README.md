@@ -176,6 +176,7 @@ gridTradingSettings {
       14800, 14600, 14400,
       14200, 14000
     ],
+    step: 200,
     side: 'Sell',
     symbol: 'BTCUSD',
     high: 16000,
