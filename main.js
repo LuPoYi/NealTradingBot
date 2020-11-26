@@ -174,6 +174,7 @@ const websocketConnect = () => {
 
             // Find the uuid if price and order_id exist
             for (const [key, result] of Object.entries(gridTradingResult)) {
+              // above: (node:9899) UnhandledPromiseRejectionWarning: TypeError: Cannot convert undefined or null to object
               uuid = key
               resultObject = JSON.parse(result)
               priceList = resultObject?.settings?.priceList
