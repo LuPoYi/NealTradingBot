@@ -1,4 +1,4 @@
-const { WebsocketClient } = require('@pxtrn/bybit-api')
+const { WebsocketClient, DefaultLogger } = require('@pxtrn/bybit-api')
 const mainGridTrading = require('./lib/gridTrading')
 const { getLatestInformation } = require('./lib/rest/market')
 const { accountInfo, getUserLeverage, changeUserLeverage } = require('./lib/rest/account')
@@ -62,10 +62,10 @@ const mainInquirer = () => {
         name: 'action',
         message: '要幹麻?',
         choices: [
-          'Account 倉位及餘額',
-          'Order 未成交訂單',
-          'History 已成交訂單',
-          'Market 最新成交價',
+          // 'Account 倉位及餘額',
+          // 'Order 未成交訂單',
+          // 'History 已成交訂單',
+          // 'Market 最新成交價',
           'GridTrading 網格單',
         ],
       },
@@ -74,7 +74,8 @@ const mainInquirer = () => {
       let action = answers.action.split(' ')[0]
       switch (action) {
         case 'Account':
-          accountInfo('BTC')
+          // accountInfo('BTC')
+          // accountInfo('ETH')
           // changeUserLeverage(5, 'ETHUSD')
           // getUserLeverage()
           break
@@ -87,7 +88,10 @@ const mainInquirer = () => {
           break
         case 'Market':
           getLatestInformation('BTCUSD').then((price) => {
-            console.log('price', price)
+            console.log('BTCUSD', price)
+          })
+          getLatestInformation('ETHUSD').then((price) => {
+            console.log('ETHUSD', price)
           })
           break
         default:
@@ -127,9 +131,11 @@ const websocketConnect = () => {
   const dotenv = require('dotenv')
   dotenv.config()
 
+  DefaultLogger.silly = () => {}
+
   const API_KEY = process.env.API_KEY
   const PRIVATE_KEY = process.env.PRIVATE_KEY
-  const ws = new WebsocketClient({ key: API_KEY, secret: PRIVATE_KEY })
+  const ws = new WebsocketClient({ key: API_KEY, secret: PRIVATE_KEY }, DefaultLogger)
 
   ws.subscribe(['position', 'order'])
 
