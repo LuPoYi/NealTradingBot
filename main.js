@@ -1,7 +1,7 @@
 const { WebsocketClient, DefaultLogger } = require('@pxtrn/bybit-api')
 const mainGridTrading = require('./lib/gridTrading')
 const { getLatestInformation } = require('./lib/rest/market')
-const { accountInfo, getUserLeverage, changeUserLeverage } = require('./lib/rest/account')
+const { getWalletBalance, getUserLeverage, changeUserLeverage } = require('./lib/rest/account')
 const { redisClient, restClient, redisHGetAllAsync, redisHSetAsync } = require('./lib/client')
 const { placeActiveOrder } = require('./lib/rest/order')
 const inquirer = require('inquirer')
@@ -62,7 +62,7 @@ const mainInquirer = () => {
         name: 'action',
         message: '要幹麻?',
         choices: [
-          // 'Account 倉位及餘額',
+          'Account 倉位及餘額',
           // 'Order 未成交訂單',
           // 'History 已成交訂單',
           // 'Market 最新成交價',
@@ -74,12 +74,42 @@ const mainInquirer = () => {
       let action = answers.action.split(' ')[0]
       switch (action) {
         case 'Account':
-          // accountInfo('BTC')
-          // accountInfo('ETH')
-          // changeUserLeverage(5, 'ETHUSD')
-          // getUserLeverage()
+          getWalletBalance('BTC')
+          getWalletBalance('ETH')
+          changeUserLeverage(1, 'BTCUSD')
+          changeUserLeverage(1, 'ETHUSD')
           break
         case 'Order':
+          // restClient.getPosition({ symbol: 'ETHUSD' }).then((data) => {
+          //   console.log('getPosition', data)
+          // })
+          // restClient.getUserLeverage().then((data) => {
+          //   console.log('getUserLeverage', data)
+          // })
+
+          // restClient.getActiveOrder({ symbol: 'ETHUSD', order_status: 'New' }).then((data) => {
+          //   console.log('getActiveOrder', data.result.data)
+          // })
+
+          // restClient.cancelAllActiveOrders({ symbol: 'ETHUSD' }).then((data) => {
+          //   console.log('cancelAllActiveOrders', data)
+          // })
+
+          // restClient
+          //   .placeActiveOrder({
+          //     symbol: 'ETHUSD',
+          //     side: 'Buy',
+          //     order_type: 'Market',
+          //     qty: '1645',
+          //     time_in_force: 'GoodTillCancel',
+          //     reduce_only: true,
+          //   })
+          //   .then((data) => {
+          //     console.log('placeActiveOrder', data)
+          //   })
+
+          //side: 'Sell',
+          //size: 1645,
           break
         case 'History':
           break
