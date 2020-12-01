@@ -40,20 +40,6 @@ const checkRest = () => {
   })
 }
 
-const checkCurrentOrders = () => {
-  // redis - GridTrading
-
-  // TODO: redisClient.hgetall('gridTrading', function (_, results) {})
-
-  // bybit - current Order
-
-  // TODO: restClient.getActiveOrder
-  // ...and then
-  // TODO: restClient.placeActiveOrder
-
-  return 'A'
-}
-
 const mainInquirer = () => {
   inquirer
     .prompt([
@@ -107,9 +93,6 @@ const mainInquirer = () => {
           //   .then((data) => {
           //     console.log('placeActiveOrder', data)
           //   })
-
-          //side: 'Sell',
-          //size: 1645,
           break
         case 'History':
           break
@@ -292,16 +275,37 @@ const websocketConnect = () => {
 }
 
 const main = async () => {
-  // check redis connection
+  // 1. check redis connection
   const isRedisOK = await checkRedis()
   console.log(isRedisOK)
 
-  // check bybit api
+  // 2. check bybit api
   const isRestOK = await checkRest()
   console.log(isRestOK)
 
-  // check current orders JSON.stringify
+  // 3. show current status(balance, position, orders)
+  const btcPrice = await getLatestInformation('BTCUSD')
+  console.log('BTC Price', btcPrice)
 
+  const ethPrice = await getLatestInformation('ETHUSD')
+  console.log('ETH Price', ethPrice)
+
+  const btcBalance = await getWalletBalance('BTC')
+  console.log('BTC Balance', btcBalance)
+
+  const ethBalance = await getWalletBalance('ETH')
+  console.log('ETH Balance', ethBalance)
+
+  const checkPoint = await inquirer.prompt({
+    type: 'confirm',
+    name: 'isContinue',
+    message: '是否要繼續?',
+    default: false,
+  })
+
+  console.log('checkPoint', checkPoint.isContinue)
+
+  // check current orders
   redisClient.hgetall('gridTrading', function (_, results) {
     if (results) {
       remindInquirer(results)
