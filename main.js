@@ -28,7 +28,6 @@ const checkRedis = () => {
 }
 
 const checkCurrentStatus = async () => {
-  // 2. show current status(balance, position, orders)
   const latestBtcPrice = await getLatestInformation('BTCUSD')
   console.log('BTC 最新成交價', parseFloat(latestBtcPrice))
 
@@ -109,6 +108,7 @@ const main = async () => {
   // 2. check current status
   await checkCurrentStatus()
 
+  // 3. just a stop
   const checkPoint = await inquirer.prompt({
     type: 'confirm',
     name: 'isContinue',
@@ -116,8 +116,7 @@ const main = async () => {
     default: false,
   })
 
-  console.log('checkPoint', checkPoint.isContinue)
-
+  // main interaction
   mainInquirer()
 }
 
