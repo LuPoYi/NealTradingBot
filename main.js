@@ -88,10 +88,10 @@ const mainInquirer = () => {
 }
 
 const main = async () => {
-  systemLog('systemLog')
-  apiLog('apiLog')
-  wsLog('wsLog')
-  errorLog('errorLog')
+  // systemLog('systemLog')
+  // apiLog('apiLog')
+  // wsLog('wsLog')
+  // errorLog('errorLog')
 
   // 1. check redis connection
   const isRedisOK = await checkRedis()
