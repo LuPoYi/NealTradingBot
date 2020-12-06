@@ -28,6 +28,7 @@
 
 - inquirer
 - readline
+- chalk
 
 #### Flow
 

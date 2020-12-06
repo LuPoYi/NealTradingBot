@@ -1,15 +1,23 @@
 const inquirer = require('inquirer')
+const chalk = require('chalk')
 const mainGridTrading = require('./lib/gridTrading')
-const { redisClient, restClient, redisHGetAllAsync, redisHSetAsync } = require('./lib/redisClient')
+const { redisClient, redisHGetAllAsync } = require('./lib/redisClient')
 const {
   getLatestInformation,
-  placeActiveOrder,
   getPosition,
   getWalletBalance,
-  getUserLeverage,
   changeUserLeverage,
 } = require('./lib/restAPI')
 const { websocketSubscribe } = require('./lib/websocket')
+const {
+  printOutCurrentGridTrading,
+  logColors,
+  systemLog,
+  apiLog,
+  wsLog,
+  errorLog,
+} = require('./lib/utils/helper')
+const { primary, success, info, warning, error } = logColors
 
 const checkRedis = () => {
   return new Promise((resolve, reject) => {
@@ -27,42 +35,21 @@ const checkRedis = () => {
   })
 }
 
-const checkCurrentStatus = async () => {
-  const latestBtcPrice = await getLatestInformation('BTCUSD')
-  console.log('BTC 最新成交價', parseFloat(latestBtcPrice))
+const checkCurrentStatus = async (coins) => {
+  for (let coin of coins) {
+    console.group(primary(coin))
+    const symbol = `${coin}USD`
+    const latestPrice = await getLatestInformation(symbol)
+    console.log(`最新成交價 ${warning(latestPrice)}`)
 
-  const latestEthPrice = await getLatestInformation('ETHUSD')
-  console.log('ETH 最新成交價', parseFloat(latestEthPrice))
+    const balance = await getWalletBalance(coin)
+    console.log(`可用餘額 ${warning(balance?.available_balance)}`)
 
-  const btcBalance = await getWalletBalance('BTC')
-  console.log('BTC 可用餘額', btcBalance?.available_balance)
-
-  const ethBalance = await getWalletBalance('ETH')
-  console.log('ETH 可用餘額', ethBalance?.available_balance)
-
-  const btcPosition = await getPosition('BTCUSD')
-  console.log(
-    `BTC ${btcPosition?.side} 倉位: Qty: ${btcPosition?.size} Value: ${btcPosition?.position_margin}`
-  )
-
-  const ethPosition = await getPosition('ETHUSD')
-  console.log(
-    `ETH ${ethPosition?.side} 倉位: Qty: ${ethPosition?.size} Value: ${ethPosition?.position_margin}`
-  )
-
-  const gridTradingResult = await redisHGetAllAsync('previewGridTrading')
-  if (gridTradingResult) {
-    console.log('目前網格單: ')
-
-    for (const [key, result] of Object.entries(gridTradingResult)) {
-      const resultObject = JSON.parse(result)
-      const { step, side, symbol, high, low, grids, totalQty, qty } = resultObject?.settings || {}
-      console.log(
-        `#${key} ${symbol} ${side} ${low}->${high} 網格區間:${step} 網格數:${grids} 單筆網格:${qty} 總投入:${totalQty}`
-      )
-    }
-  } else {
-    console.log('目前尚無網格單')
+    const position = await getPosition(symbol)
+    console.log(
+      `${symbol} ${position?.side} 倉位: Qty: ${position?.size} Value: ${position?.position_margin}`
+    )
+    console.groupEnd()
   }
 }
 
@@ -101,12 +88,21 @@ const mainInquirer = () => {
 }
 
 const main = async () => {
+  systemLog('systemLog')
+  apiLog('apiLog')
+  wsLog('wsLog')
+  errorLog('errorLog')
+
   // 1. check redis connection
   const isRedisOK = await checkRedis()
   console.log(isRedisOK)
 
   // 2. check current status
-  await checkCurrentStatus()
+  await checkCurrentStatus(['BTC', 'ETH'])
+
+  // 3. check current grid tradings
+  const gridTradingResult = await redisHGetAllAsync('gridTrading')
+  await printOutCurrentGridTrading(gridTradingResult)
 
   // 3. just a stop
   const checkPoint = await inquirer.prompt({
@@ -116,30 +112,10 @@ const main = async () => {
     default: false,
   })
 
-  // main interaction
-  mainInquirer()
+  // 4. main
+  if (checkPoint.isContinue) {
+    mainInquirer()
+  }
 }
 
 main()
-
-// this function should be in the websocket loop
-// loop this function to be a websocket listener and place order and update redis
-// const checkAndPlaceOrders = () => {
-//   let ans
-//   console.log('checkAndPlaceOrders')
-//   redisClient.hgetall('gridTrading', function (err, results) {
-//     if (err) {
-//       console.error('err', err)
-//     } else {
-//       // console.log('results', results)
-//       ans = results
-//       // a0ivro: '{"settings":{"priceList":[17000,16600,16200,15800,15400,15000],"side":"Sell","symbol":"BTCUSD","high":17000,"low":15000,"grids":6,"totalQty":6000,"qty":1000,"startAt":1605445243},"currentPosition":{},"currentOrders":[],"filledOrders":[],"orderCount":0}',
-//       // nogtv8: '{"settings":{"priceList":[17000,16600,16200,15800,15400,15000],"side":"Sell","symbol":"BTCUSD","high":17000,"low":15000,"grids":6,"totalQty":6000,"qty":1000,"startAt":1605703794},"currentPosition":{},"currentOrders":[],"filledOrders":[],"orderCount":0}',
-//     }
-//   })
-
-//   return ans
-// }
-
-// const getActiveOrders = await getActiveOrder({ symbol: 'BTCUSD' })
-// console.log('getActiveOrder', getActiveOrders?.result?.data)
