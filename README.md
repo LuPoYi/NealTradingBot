@@ -1,29 +1,5 @@
 ### Bybit 合約網格
 
-#### Basic
-
-- API KEY/SECRET 僅放在 local
-- 設定好網格基本參數後就直接下多張單
-- 批次網格單
-- 可即時呈現下單狀況(telegram?)
-- 有任何下單或交易都要通知(telegram?)
-- Error handling 要做好
-
-#### MEMO
-
-- 使用 Websocket 取即時資料
-
-  - 倉位更新 position
-  - 下單更新 execution
-
-- 使用 Rest API 下單及刪單
-
-- 計算金額獲利…
-
-- use Redis as DB
-
-- 需支援多網格
-
 #### Package
 
 - inquirer
@@ -33,15 +9,34 @@
 #### Flow
 
 - 程式開啟
-  - 確認 redis 是否已連線
+
+  - 確認 redis
+  - 確認 API KEY / API SECRET
   - 確認是否能取得 bybit API
-  - 確認目前進行中的網格單是否有未執行的單並執行
+
 - 互動介面
   1. Account 倉位及餘額
-  2. Order 未成交訂單
-  3. History 已成交訂單
-  4. Market 最新成交價
-  5. GridTrading 下網格單
+  2. GridTrading 網格單
+  3. WebSocket 開啟(會持續追踨已設定價位並下單)
+
+```zsh
+API_KEY cRjXldmNYI0mi2s246
+[Check] Redis OK
+BTC
+  最新成交價 19263.00
+  可用餘額 0.10458617
+  BTCUSD Sell 倉位: Qty: 414 Value: 0.10496202
+ETH
+  最新成交價 594.25
+  可用餘額 3.38753387
+  ETHUSD None 倉位: Qty: 0 Value: 0
+目前尚無網格單
+? 是否要繼續? Yes
+? 要幹麻?
+  1) Account 倉位及餘額
+  2) GridTrading 網格單
+  3) WebSocket 開啟(會持續追踨已設定價位並下單)
+```
 
 ```zsh
 # Create Grid trading
@@ -107,95 +102,11 @@
 - gridTrading
 - historyGridTrading
 
-<!--
-active_gridTrading -> UUID(123456789) -> {
- startAt = Time.now,
- count = 1,
- side = "Buy",
- symbol = "BTCUSD",
- high = 14000,
- low = 13000,
- grids = 10,
- totalQty = 3000,
- baseOrderPrices = [13000, 13100, 13200, ...],
- currentOrderID: ["123", "456", "789"],
- filledOrderID: ["321", "654"]
+## TODO
 
-} -->
-
-<!--
-// 設定網格進redis
-{
-  "settings": {
-    "priceList": [
-      20000,
-      19600,
-      19200,
-      18800,
-      18400,
-      18000
-    ],
-    "side": "Sell",
-    "symbol": "BTCUSD",
-    "high": 20000,
-    "low": 18000,
-    "grids": 6,
-    "totalQty": 300,
-    "qty": 50,
-    "startAt": 1606034107
-  },
-  "currentPosition": {},
-  "currentOrders": {
-    "a5009d6c-7b03-44ad-8417-19f4dd60f470": {
-      ...
-      order_status: 'New',
-      symbol: 'BTCUSD',
-      side: 'Sell',
-      order_type: 'Limit',
-      price: '20000',
-      qty: '50',
-      ...
-    },
-    "c62dc19c-7689-430f-9a41-8494c4d8c2e9": {
-      ...
-    }
-  },
-  "filledOrders": [],
-  "orderCount": 0,
-  "allOrderResults": [
-    {}
-  ]
-}-->
-
-<!--
-> gridTradingExecute('yu0f9', 1604930338)
-gridTradingSettings {
-  settings: {
-    priceList: [
-      16000, 15800, 15600,
-      15400, 15200, 15000,
-      14800, 14600, 14400,
-      14200, 14000
-    ],
-    step: 200,
-    side: 'Sell',
-    symbol: 'BTCUSD',
-    high: 16000,
-    low: 14000,
-    grids: 11,
-    totalQty: 1000,
-    qty: 90.9090909090909,
-    startAt: 1604930338
-  }
-} -->
-
-網格基本規則：
-
-// high 0.9
-// low 0.7
-// grids 10
-// => 0.7888, 0.7666, 0.7
-
-// high 14000
-// low 13000
-// grids 10
+- 大量下單超出 Bybit 上限
+- 計算獲利
+- 可即時呈現下單狀況(telegram bot?)
+- 下單及成交通知(telegram bot?)
+- Error Handling
+- Log to file
