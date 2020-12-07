@@ -14,31 +14,19 @@ console.log(`PRIVATE_KEY ${PRIVATE_KEY}`)
 
 const client = new RestClient(API_KEY, PRIVATE_KEY)
 
-console.log('getLatestInformation')
-client.getLatestInformation({ symbol: 'BTCUSD' }).then((data) => {
-  console.log('data', data)
-})
+// console.log('getLatestInformation')
+// client.getLatestInformation({ symbol: 'BTCUSD' }).then((data) => {
+//   console.log('data', data)
+// })
 
 client
-  .changeUserLeverage({ leverage: 10, symbol: 'ETHUSD' })
+  .getActiveOrder({ symbol: 'ETHUSD', limit: 50 })
   .then((result) => {
-    console.log(result)
+    console.log('getActiveOrder', result.result.data)
   })
   .catch((err) => {
     console.error(error)
   })
-
-var questions = [
-  {
-    type: 'input',
-    name: 'name',
-    message: "What's your name?",
-  },
-]
-
-inquirer.prompt(questions).then((answers) => {
-  console.log(`Hi ${answers['name']}!`)
-})
 
 // const ENV = process.env.API_KEY
 // const API_KEY = process.env.API_KEY
