@@ -17,6 +17,7 @@ const {
   wsLog,
   errorLog,
 } = require('./lib/utils/helper')
+const { logger, loggerAPI, loggerWS, loggerServer } = require('./lib/utils/logger')
 const { primary, success, info, warning, error } = logColors
 
 const checkRedis = () => {
