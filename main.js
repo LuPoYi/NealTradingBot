@@ -1,5 +1,4 @@
 const inquirer = require('inquirer')
-const chalk = require('chalk')
 const mainGridTrading = require('./lib/gridTrading')
 const { redisClient, redisHGetAllAsync } = require('./lib/redisClient')
 const {
@@ -18,9 +17,11 @@ const {
   errorLog,
 } = require('./lib/utils/helper')
 const { logger, loggerAPI, loggerWS, loggerServer } = require('./lib/utils/logger')
+const { sendTelegramMessage } = require('./lib/utils/telegramBot')
 const { primary, success, info, warning, error } = logColors
 
 const checkRedis = () => {
+  sendTelegramMessage('Abc')
   return new Promise((resolve, reject) => {
     try {
       redisClient.set('foo', Date.now())
