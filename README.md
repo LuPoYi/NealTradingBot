@@ -104,9 +104,8 @@ ETH
 
 ## TODO
 
-- 大量下單超出 Bybit 上限
+- 大量下單超出 Bybit 上限 - Too many visits!
 - 計算獲利
 - 可即時呈現下單狀況(telegram bot?)
-- 下單及成交通知(telegram bot?)
 - Error Handling
 - Log to file
