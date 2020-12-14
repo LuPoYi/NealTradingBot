@@ -6,22 +6,15 @@ const {
   getPosition,
   getWalletBalance,
   changeUserLeverage,
+  getUserLeverage,
 } = require('./lib/restAPI')
 const { websocketSubscribe } = require('./lib/websocket')
-const {
-  printOutCurrentGridTrading,
-  logColors,
-  systemLog,
-  apiLog,
-  wsLog,
-  errorLog,
-} = require('./lib/utils/helper')
+const { printOutCurrentGridTrading, logColors } = require('./lib/utils/helper')
 const { logger, loggerAPI, loggerWS, loggerServer } = require('./lib/utils/logger')
 const { sendTelegramMessage } = require('./lib/utils/telegramBot')
 const { primary, success, info, warning, error } = logColors
 
 const checkRedis = () => {
-  sendTelegramMessage('Abc')
   return new Promise((resolve, reject) => {
     try {
       redisClient.set('foo', Date.now())
@@ -38,6 +31,8 @@ const checkRedis = () => {
 }
 
 const checkCurrentStatus = async (coins) => {
+  const userLeverages = await getUserLeverage()
+
   for (let coin of coins) {
     console.group(primary(coin))
     const symbol = `${coin}USD`
@@ -45,7 +40,18 @@ const checkCurrentStatus = async (coins) => {
     console.log(`最新成交價 ${warning(latestPrice)}`)
 
     const balance = await getWalletBalance(coin)
-    console.log(`可用餘額 ${warning(balance?.available_balance)}`)
+    console.log(
+      `可用餘額 ${warning(balance?.available_balance)} ${coin} => ${parseInt(
+        latestPrice * balance?.available_balance
+      )} USD`
+    )
+
+    const leverage = userLeverages?.[symbol]?.leverage
+    console.log(`目前槓桿為 ${leverage} 倍`)
+    if (leverage !== 1) {
+      const newLeverage = await changeUserLeverage(1, symbol)
+      console.log(`更新槓桿為 ${newLeverage} 倍`)
+    }
 
     const position = await getPosition(symbol)
     console.log(
@@ -63,7 +69,7 @@ const mainInquirer = () => {
         name: 'action',
         message: '要幹麻?',
         choices: [
-          'Account 倉位及餘額',
+          //'Account 倉位及餘額',
           'GridTrading 網格單',
           'WebSocket 開啟(會持續追踨已設定價位並下單)',
         ],
@@ -72,12 +78,11 @@ const mainInquirer = () => {
     .then((answers) => {
       let action = answers.action.split(' ')[0]
       switch (action) {
-        case 'Account':
-          getWalletBalance('BTC')
-          getWalletBalance('ETH')
-          changeUserLeverage(1, 'BTCUSD')
-          changeUserLeverage(1, 'ETHUSD')
-          break
+        // case 'Account':
+        //   getWalletBalance('BTC')
+        //   getWalletBalance('ETH')
+        //   getUserLeverage('BTCUSD')
+        //   break
         case 'GridTrading':
           mainGridTrading()
           break
