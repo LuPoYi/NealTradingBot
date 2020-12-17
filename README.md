@@ -1,5 +1,30 @@
 ### Bybit 合約網格
 
+### 如何使用
+
+```zsh
+# 安裝 redis
+> sudo apt update
+> sudo apt install redis-server
+
+# 啟動 redis
+> sudo systemctl status redis-server
+
+# 下載專案
+> git clone https://github.com/LuPoYi/NealTradingBot
+> cd NealTradingBot
+> yarn
+
+# 更改設定檔
+> cp .env.backup .env
+> vim .env
+
+## 執行
+> tmux
+> node main.js
+
+```
+
 #### Package
 
 - inquirer
