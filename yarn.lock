@@ -93,10 +93,9 @@ bluebird@^3.5.0, bluebird@^3.5.1:
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.7.2.tgz#9f229c15be272454ffa973ace0dbee79a1b0c36f"
   integrity sha512-XpNj6GDQzdfW+r2Wnn7xiSAd7TM3jzkxGXBGTtWKuSXv1xUV+azxAm8jdWZN06QTQk+2N2XB9jRDkvbmQmcRtg==
 
-bybit-api@^1.2.5:
+"bybit-api@git+https://github.com/LuPoYi/bybit-api.git":
   version "1.2.5"
-  resolved "https://registry.yarnpkg.com/bybit-api/-/bybit-api-1.2.5.tgz#9f2c42046d52da7b67a87792b5bc4863bd25e181"
-  integrity sha512-Sm53je1V0F+y2WM+RrGUix+2v4C/0S8I+PJWq7xRL2JLUOxJaDQLgiUlx+Dvi0Z82SdZM3mq2R8LP0+BfdmueA==
+  resolved "git+https://github.com/LuPoYi/bybit-api.git#412524d4c02b1696973ad08a239efe1efbad9e1a"
   dependencies:
     axios "^0.21.0"
     ws "^7.3.1"

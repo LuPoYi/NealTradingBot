@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "bybit-api": "^1.2.5",
+    "bybit-api": "git+https://github.com/LuPoYi/bybit-api.git",
     "chalk": "^4.1.0",
     "dotenv": "^8.2.0",
     "inquirer": "^7.3.3",
