@@ -10,9 +10,7 @@ const {
 } = require('./lib/restAPI')
 const { websocketSubscribe } = require('./lib/websocket')
 const { printOutCurrentGridTrading, logColors } = require('./lib/utils/helper')
-const { logger, loggerAPI, loggerWS, loggerServer } = require('./lib/utils/logger')
-const { sendTelegramMessage } = require('./lib/utils/telegramBot')
-const { primary, success, info, warning, error } = logColors
+const { primary, warning } = logColors
 
 const checkRedis = () => {
   return new Promise((resolve, reject) => {
@@ -37,25 +35,25 @@ const checkCurrentStatus = async (coins) => {
     console.group(primary(coin))
     const symbol = `${coin}USD`
     const latestPrice = await getLatestInformation(symbol)
-    console.log(`最新成交價 ${warning(latestPrice)}`)
+    console.log(`Latest Price: ${warning(latestPrice)}`)
 
     const balance = await getWalletBalance(coin)
     console.log(
-      `可用餘額 ${warning(balance?.available_balance)} ${coin} => ${parseInt(
+      `Available Balance: ${warning(balance?.available_balance)} ${coin} => ${parseInt(
         latestPrice * balance?.available_balance
       )} USD`
     )
 
     const leverage = userLeverages?.[symbol]?.leverage
-    console.log(`目前槓桿為 ${leverage} 倍`)
+    console.log(`Current Leverage: ${leverage}x`)
     if (leverage !== 1) {
       const newLeverage = await changeUserLeverage(1, symbol)
-      console.log(`更新槓桿為 ${newLeverage} 倍`)
+      console.log(`Update Leverage to: ${newLeverage}x`)
     }
 
     const position = await getPosition(symbol)
     console.log(
-      `${symbol} ${position?.side} 倉位: Qty: ${position?.size} Value: ${position?.position_margin}`
+      `${symbol} ${position?.side} Position: Qty: ${position?.size} Value: ${position?.position_margin}`
     )
     console.groupEnd()
   }
@@ -78,11 +76,6 @@ const mainInquirer = () => {
     .then((answers) => {
       let action = answers.action.split(' ')[0]
       switch (action) {
-        // case 'Account':
-        //   getWalletBalance('BTC')
-        //   getWalletBalance('ETH')
-        //   getUserLeverage('BTCUSD')
-        //   break
         case 'GridTrading':
           mainGridTrading()
           break
@@ -95,11 +88,6 @@ const mainInquirer = () => {
 }
 
 const main = async () => {
-  // systemLog('systemLog')
-  // apiLog('apiLog')
-  // wsLog('wsLog')
-  // errorLog('errorLog')
-
   // 1. check redis connection
   const isRedisOK = await checkRedis()
   console.log(isRedisOK)
@@ -115,7 +103,7 @@ const main = async () => {
   const checkPoint = await inquirer.prompt({
     type: 'confirm',
     name: 'isContinue',
-    message: '是否要繼續?',
+    message: 'Continue?',
     default: false,
   })
 

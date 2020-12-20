@@ -134,3 +134,5 @@ ETH
 - 可即時呈現下單狀況(telegram bot?)
 - Error Handling
 - Log to file
+- 漏單如何處理?
+- separate log by pair
