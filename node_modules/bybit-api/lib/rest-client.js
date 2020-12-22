@@ -30,6 +30,8 @@ module.exports = class RestClient {
   }
 
   async getActiveOrder(params) {
+    assert(params, "No params passed");
+    assert(params.symbol, "Parameter symbol is required");
     return await this.request.get("/v2/private/order/list", params);
   }
 
@@ -78,10 +80,10 @@ module.exports = class RestClient {
 
   async queryActiveOrder(params) {
     assert(params, "No params passed");
-    assert(
-      params.order_id || params.order_link_id,
-      "Parameter order_id OR order_link_id is required"
-    );
+    // assert(
+    //   params.order_id || params.order_link_id,
+    //   "Parameter order_id OR order_link_id is required"
+    // );
     assert(params.symbol, "Parameter symbol is required");
 
     return await this.request.get("v2/private/order", params);

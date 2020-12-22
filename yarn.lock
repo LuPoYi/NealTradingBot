@@ -95,7 +95,7 @@ bluebird@^3.5.0, bluebird@^3.5.1:
 
 "bybit-api@git+https://github.com/LuPoYi/bybit-api.git":
   version "1.2.5"
-  resolved "git+https://github.com/LuPoYi/bybit-api.git#412524d4c02b1696973ad08a239efe1efbad9e1a"
+  resolved "git+https://github.com/LuPoYi/bybit-api.git#de5e11e07b582a638285ec6dc8f8385e61258016"
   dependencies:
     axios "^0.21.0"
     ws "^7.3.1"

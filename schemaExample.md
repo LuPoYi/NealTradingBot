@@ -18,28 +18,8 @@
   },
   "position": 260,
   "currentOrders": {
-    "592.88": {
-      "user_id": 131263,
-      "order_id": "a7728bf6-b6f5-4eaa-8b64-a3303ec8cb1f",
-      "symbol": "ETHUSD",
-      "side": "Sell",
-      "order_type": "Limit",
-      "price": 592.85,
-      "qty": 20,
-      "time_in_force": "GoodTillCancel",
-      "order_status": "Created",
-      "last_exec_time": 0,
-      "last_exec_price": 0,
-      "leaves_qty": 20,
-      "cum_exec_qty": 0,
-      "cum_exec_value": 0,
-      "cum_exec_fee": 0,
-      "reject_reason": "EC_NoError",
-      "order_link_id": "",
-      "created_at": "2020-12-05T13:27:55.827Z",
-      "updated_at": "2020-12-05T13:27:55.827Z"
-    },
-    "592.38": {}
+    "592.88": "a7728bf6-b6f5-4eaa-8b64-a3303ec8cb1f",
+    "592.38": "a7728bf6-b6f5-4eaa-8b64-a3303ec8cb1f",
   },
   "allOrderResults": [
     {
