@@ -9,8 +9,7 @@ const {
   getUserLeverage,
 } = require('./lib/restAPI')
 const { websocketSubscribe } = require('./lib/websocket')
-const { printOutCurrentGridTrading, logColors } = require('./lib/utils/helper')
-const { primary, warning } = logColors
+const { printOutCurrentGridTrading } = require('./lib/utils/helper')
 
 const checkRedis = () => {
   return new Promise((resolve, reject) => {
@@ -32,14 +31,14 @@ const checkCurrentStatus = async (coins) => {
   const userLeverages = await getUserLeverage()
 
   for (let coin of coins) {
-    console.group(primary(coin))
+    console.group(coin)
     const symbol = `${coin}USD`
     const latestPrice = await getLatestInformation(symbol)
-    console.log(`Latest Price: ${warning(latestPrice)}`)
+    console.log(`Latest Price: ${latestPrice}`)
 
     const balance = await getWalletBalance(coin)
     console.log(
-      `Available Balance: ${warning(balance?.available_balance)} ${coin} => ${parseInt(
+      `Available Balance: ${balance?.available_balance} ${coin} => ${parseInt(
         latestPrice * balance?.available_balance
       )} USD`
     )
